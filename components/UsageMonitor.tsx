@@ -72,7 +72,7 @@ export default function UsageMonitor() {
         <div className="flex items-center text-yellow-800 dark:text-yellow-200">
           <AlertTriangle className="w-4 h-4 mr-2" />
           <span className="text-xs">
-            You're on the free tier. No billing will occur.
+            You&apos;re on the free tier. No billing will occur.
           </span>
         </div>
       </div>

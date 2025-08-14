@@ -1,3 +1,14 @@
+// Cloudflare-specific type declarations
+declare class WebSocketPair {
+  constructor()
+  0: WebSocket
+  1: any
+}
+
+declare interface ResponseInit {
+  webSocket?: WebSocket
+}
+
 export class TldrawDurableObject {
   private state: any
   private env: any
@@ -74,7 +85,7 @@ export class TldrawDurableObject {
       return new Response(null, {
         status: 101,
         webSocket: client,
-      })
+      } as any)
     }
     
     return new Response('Not found', { status: 404 })

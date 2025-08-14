@@ -9,7 +9,7 @@ export default function NotFound() {
           Room Not Found
         </h2>
         <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
-          The room you're looking for doesn't exist or has an invalid ID.
+          The room you&apos;re looking for doesn&apos;t exist or has an invalid ID.
         </p>
         <Link
           href="/"
