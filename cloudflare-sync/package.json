@@ -1,0 +1,19 @@
+{
+  "name": "tldraw-cloudflare-sync",
+  "version": "1.0.0",
+  "description": "Cloudflare Worker for tldraw sync",
+  "main": "worker/worker.ts",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@tldraw/sync": "^3.15.1"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240807.0",
+    "typescript": "^5.0.0",
+    "wrangler": "^3.0.0"
+  }
+}

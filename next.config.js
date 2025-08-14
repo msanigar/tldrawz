@@ -7,11 +7,16 @@ const nextConfig = {
     // Fix for multiple tldraw library instances
     config.resolve.alias = {
       ...config.resolve.alias,
+      'tldraw': require.resolve('tldraw'),
       '@tldraw/utils': require.resolve('@tldraw/utils'),
       '@tldraw/state': require.resolve('@tldraw/state'),
+      '@tldraw/state-react': require.resolve('@tldraw/state-react'),
       '@tldraw/store': require.resolve('@tldraw/store'),
       '@tldraw/validate': require.resolve('@tldraw/validate'),
       '@tldraw/tlschema': require.resolve('@tldraw/tlschema'),
+      '@tldraw/editor': require.resolve('@tldraw/editor'),
+      '@tldraw/sync-core': require.resolve('@tldraw/sync-core'),
+      '@tldraw/sync': require.resolve('@tldraw/sync'),
     }
     
     return config

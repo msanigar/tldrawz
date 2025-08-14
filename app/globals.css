@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* Import tldraw styles */
-@import 'tldraw/tldraw.css';
+@import '../styles/tldraw.css';
 
 :root {
   --background: #ffffff;
