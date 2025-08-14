@@ -17,6 +17,25 @@ const nextConfig = {
       '@tldraw/editor': require.resolve('@tldraw/editor'),
       '@tldraw/sync-core': require.resolve('@tldraw/sync-core'),
       '@tldraw/sync': require.resolve('@tldraw/sync'),
+      '@tldraw/assets': require.resolve('@tldraw/assets'),
+      '@tldraw/vec': require.resolve('@tldraw/vec'),
+    }
+    
+    // Additional optimization to prevent duplicate modules
+    config.optimization = {
+      ...config.optimization,
+      splitChunks: {
+        ...config.optimization.splitChunks,
+        cacheGroups: {
+          ...config.optimization.splitChunks.cacheGroups,
+          tldraw: {
+            test: /[\\/]node_modules[\\/]@tldraw[\\/]/,
+            name: 'tldraw',
+            chunks: 'all',
+            priority: 10,
+          },
+        },
+      },
     }
     
     return config
