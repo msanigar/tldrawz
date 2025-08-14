@@ -2,7 +2,8 @@
 
 import { useRef, useEffect, useImperativeHandle, forwardRef, useState } from 'react'
 import { Tldraw, inlineBase64AssetStore } from 'tldraw'
-import { useSyncDemo } from '@tldraw/sync'
+import { useSync } from '@tldraw/sync' // Switch back to our Cloudflare server
+import { env } from '@/lib/env' // Re-enable env
 
 interface WhiteboardProps {
   roomId: string
@@ -22,15 +23,15 @@ const Whiteboard = forwardRef<WhiteboardRef, WhiteboardProps>(
     const editorRef = useRef<any>(null)
     const [isReady, setIsReady] = useState(false)
     
-    // Create synced store using tldraw's demo server
-    // TODO: Debug Cloudflare backend sync protocol
-    const store = useSyncDemo({
-      roomId: roomId,
+    // Use our Cloudflare backend with the official URL structure
+    const store = useSync({
+      uri: `https://tldraw-worker.myles-sanigar.workers.dev/api/connect/${roomId}`,
       userInfo: {
         id: 'user-' + Math.random().toString(36).substr(2, 9),
         name: userInfo.name,
         color: userInfo.color,
       },
+      assets: inlineBase64AssetStore,
     })
 
     const handleMount = (editor: any) => {
