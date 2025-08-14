@@ -34,21 +34,25 @@ export class TldrawDurableObject {
       const sessionId = url.searchParams.get('sessionId') || 'default'
       const storeId = url.searchParams.get('storeId') || 'default'
       
+      console.log('New WebSocket connection:', { sessionId, storeId })
+      
       this.sessions.set(sessionId, server)
       
       server.accept()
       
       // Send initial connection confirmation
-      server.send(JSON.stringify({
+      const connectMessage = {
         type: 'connected',
         sessionId,
         storeId
-      }))
+      }
+      console.log('Sending connect message:', connectMessage)
+      server.send(JSON.stringify(connectMessage))
       
       server.addEventListener('message', (event: any) => {
         try {
           const message = JSON.parse(event.data as string)
-          console.log('Received message:', message)
+          console.log('Received message from', sessionId, ':', message)
           
           // Handle different message types
           switch (message.type) {
@@ -62,14 +66,28 @@ export class TldrawDurableObject {
               break
             case 'ping':
               // Handle ping
-              server.send(JSON.stringify({ type: 'pong' }))
+              const pongMessage = { type: 'pong' }
+              console.log('Sending pong to', sessionId)
+              server.send(JSON.stringify(pongMessage))
+              break
+            case 'connect':
+              // Handle connect request
+              const connectResponse = {
+                type: 'connect_response',
+                sessionId,
+                storeId
+              }
+              console.log('Sending connect response to', sessionId)
+              server.send(JSON.stringify(connectResponse))
               break
             default:
-              // Broadcast other messages to all sessions
+              // For unknown message types, just broadcast to others
+              console.log('Unknown message type:', message.type, 'broadcasting to others')
               this.broadcastToOthers(event.data, sessionId)
           }
         } catch (error) {
-          console.error('Error parsing message:', error)
+          console.error('Error parsing message from', sessionId, ':', error)
+          console.error('Raw message:', event.data)
         }
       })
       
@@ -79,7 +97,7 @@ export class TldrawDurableObject {
       })
       
       server.addEventListener('error', (error: any) => {
-        console.error('WebSocket error:', error)
+        console.error('WebSocket error for session', sessionId, ':', error)
       })
       
       return new Response(null, {
@@ -92,6 +110,8 @@ export class TldrawDurableObject {
   }
 
   private handlePush(message: any, sessionId: string) {
+    console.log('Handling push from', sessionId, ':', message)
+    
     // Update room data
     if (message.updates) {
       this.roomData.clock = Math.max(this.roomData.clock, message.clock || 0)
@@ -103,6 +123,8 @@ export class TldrawDurableObject {
   }
 
   private handlePull(message: any, sessionId: string) {
+    console.log('Handling pull from', sessionId, ':', message)
+    
     // Send current room state
     const response = {
       type: 'pull_response',
@@ -113,13 +135,16 @@ export class TldrawDurableObject {
     
     const session = this.sessions.get(sessionId)
     if (session && session.readyState === 1) {
+      console.log('Sending pull response to', sessionId)
       session.send(JSON.stringify(response))
     }
   }
 
   private broadcastToOthers(data: string, excludeSessionId: string) {
+    console.log('Broadcasting to others, excluding', excludeSessionId)
     this.sessions.forEach((session, id) => {
       if (id !== excludeSessionId && session.readyState === 1) {
+        console.log('Sending to session', id)
         session.send(data)
       }
     })
