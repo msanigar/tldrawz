@@ -10,12 +10,14 @@ A minimal, production-ready realtime whiteboard POC built with Next.js, tldraw, 
 - 📤 Export to PNG/SVG
 - 🔗 Shareable room links
 - ⚡ Built on Cloudflare's edge network
+- 🖼️ Image upload support
+- 💾 Persistent storage with Cloudflare R2
 
 ## Tech Stack
 
 - **Frontend**: Next.js 14 (App Router), TypeScript, Tailwind CSS
-- **Real-time Sync**: tldraw useSync with Cloudflare Workers
-- **Backend**: Cloudflare Workers + Durable Objects
+- **Real-time Sync**: tldraw useSync with official Cloudflare Workers implementation
+- **Backend**: Cloudflare Workers + Durable Objects + R2 Storage
 - **Deployment**: Netlify (frontend), Cloudflare (backend)
 
 ## Quick Start
@@ -39,13 +41,14 @@ NEXT_PUBLIC_APP_NAME=Tldrawz
 
 ### 3. Deploy Cloudflare Backend
 
-The backend uses the official tldraw Cloudflare template:
+The backend uses the official tldraw Cloudflare sync implementation:
 
 ```bash
-# Clone the sync backend into a sibling directory
-cd ..
-git clone https://github.com/tldraw/tldraw-sync-cloudflare cloudflare-sync
+# Navigate to the cloudflare-sync directory
 cd cloudflare-sync
+
+# Install dependencies
+npm install
 
 # Install Wrangler CLI if you haven't
 npm install -g wrangler
@@ -53,11 +56,8 @@ npm install -g wrangler
 # Login to Cloudflare
 wrangler login
 
-# Create your project
-wrangler init
-
-# Configure your wrangler.toml with Durable Objects and R2 bindings
-# (See the template's README for detailed configuration)
+# Create R2 bucket (if not already created)
+# Go to Cloudflare Dashboard > R2 > Create bucket named 'tldraw-content'
 
 # Deploy
 wrangler deploy
@@ -68,6 +68,7 @@ wrangler deploy
 ### 4. Run Development Server
 
 ```bash
+# From the main tldrawz directory
 npm run dev
 ```
 
@@ -80,15 +81,17 @@ Visit [http://localhost:3000](http://localhost:3000)
 1. Connect your repository to Netlify
 2. Set build command: `npm run build`
 3. Set publish directory: `.next`
-4. Add environment variables in Netlify dashboard
+4. Add environment variables in Netlify dashboard:
+   - `NEXT_PUBLIC_SYNC_URL`: Your Cloudflare Worker URL
+   - `NEXT_PUBLIC_APP_NAME`: Your app name
 5. Deploy!
 
 ### Backend (Cloudflare)
 
-The backend deployment is handled by the official template. Key points:
+The backend uses the official tldraw Cloudflare sync implementation:
 
-- **Durable Objects**: Required for real-time sync
-- **R2 Storage**: Free tier includes 10GB storage for assets
+- **Durable Objects**: Required for real-time sync (free tier: 1M requests/day)
+- **R2 Storage**: Free tier includes 10GB storage for assets and room persistence
 - **Workers**: Free tier includes 100,000 requests/day
 
 ## Project Structure
@@ -102,12 +105,20 @@ tldrawz/
 ├── components/
 │   ├── NameGate.tsx        # User name/color input
 │   ├── Toolbar.tsx         # Export, theme, share buttons
+│   ├── UsageMonitor.tsx    # Free tier usage display
 │   └── Whiteboard.tsx      # tldraw integration
 ├── lib/
 │   ├── env.ts              # Environment validation
 │   └── id.ts               # Room ID utilities
-└── styles/
-    └── globals.css         # Tailwind + custom styles
+├── styles/
+│   ├── globals.css         # Tailwind + custom styles
+│   └── tldraw.css          # tldraw styles
+└── cloudflare-sync/        # Backend implementation
+    ├── worker/
+    │   ├── TldrawDurableObject.ts  # Official sync implementation
+    │   ├── worker.ts               # Main worker
+    │   └── assetUploads.ts         # Asset handling
+    └── wrangler.toml               # Cloudflare configuration
 ```
 
 ## Environment Variables
@@ -131,7 +142,7 @@ npm run typecheck # Run TypeScript checks
 
 ### 1. Durable Objects Configuration
 
-Add to your `wrangler.toml`:
+The `wrangler.toml` is already configured with:
 
 ```toml
 [[durable_objects.bindings]]
@@ -143,14 +154,14 @@ tag = "v1"
 new_sqlite_classes = ["TldrawDurableObject"]  # Use SQLite for free tier
 ```
 
-### 2. R2 Storage (Optional)
+### 2. R2 Storage
 
-For asset storage, add R2 binding:
+For asset storage and room persistence:
 
 ```toml
 [[r2_buckets]]
-binding = "ASSETS"
-bucket_name = "your-assets-bucket"
+binding = "TLDRAW_BUCKET"
+bucket_name = "tldraw-content"
 ```
 
 ### 3. Free Tier Limits & Billing Protection
@@ -164,17 +175,35 @@ bucket_name = "your-assets-bucket"
 - This setup uses only free tier services
 - No credit card required for free tier
 - Usage monitor included in the app to track limits
-- Automatic throttling when approaching limits
-- No billing will occur unless you explicitly upgrade to paid plans
 
-## Contributing
+## Features
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+### Real-time Collaboration
+- Multiple users can draw simultaneously
+- Live cursors show where others are drawing
+- User presence with custom names and colors
+- Automatic conflict resolution
 
-## License
+### Persistence
+- Room state automatically saved to R2
+- Drawings persist between sessions
+- Asset uploads stored in R2
 
-MIT
+### Export & Sharing
+- Export drawings as PNG or SVG
+- Shareable room links
+- Copy room URL to clipboard
+
+## Troubleshooting
+
+### Common Issues
+
+1. **"Unknown switch case" errors**: This was fixed by using the official tldraw Cloudflare sync implementation
+2. **WebSocket connection failures**: Ensure your Cloudflare Worker is deployed and accessible
+3. **Asset upload issues**: Verify R2 bucket permissions and configuration
+
+### Development Tips
+
+- Use `wrangler tail` to monitor Cloudflare Worker logs
+- Check browser console for frontend errors
+- Verify environment variables are set correctly

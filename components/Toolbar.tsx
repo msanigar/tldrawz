@@ -1,97 +1,75 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { 
-  Copy, 
-  Download, 
-  Share2,
-  Check
-} from 'lucide-react'
+import { forwardRef } from 'react'
+import { Share2, Download, Moon } from 'lucide-react'
 
 interface ToolbarProps {
   roomId: string
-  onExportPNG?: () => void
-  onExportSVG?: () => void
+  onExportPNG: () => void
+  onExportSVG: () => void
 }
 
-export default function Toolbar({ roomId, onExportPNG, onExportSVG }: ToolbarProps) {
-  const [mounted, setMounted] = useState(false)
-  const [copied, setCopied] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  const copyInviteLink = async () => {
-    const url = `${window.location.origin}/r/${roomId}`
-    try {
-      await navigator.clipboard.writeText(url)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch (error) {
-      console.error('Failed to copy link:', error)
+const Toolbar = forwardRef<HTMLDivElement, ToolbarProps>(
+  ({ roomId, onExportPNG, onExportSVG }, ref) => {
+    const copyLink = () => {
+      const url = `${window.location.origin}/r/${roomId}`
+      navigator.clipboard.writeText(url)
+      // You could add a toast notification here
     }
-  }
 
-  const toggleTheme = () => {
-    // Theme toggle temporarily disabled
-    console.log('Theme toggle disabled')
-  }
+    const toggleTheme = () => {
+      // Theme toggle disabled for now due to next-themes compatibility
+    }
 
-  if (!mounted) {
     return (
-      <div className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4">
-        <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-32"></div>
-        <div className="flex space-x-2">
-          <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-          <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-          <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4">
-      <div className="flex items-center space-x-4">
-        <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
-          Room: {roomId}
-        </h1>
-      </div>
-
-      <div className="flex items-center space-x-2">
+      <div
+        ref={ref}
+        className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg px-4 py-2 border border-gray-200 dark:border-gray-700"
+      >
         <button
-          onClick={copyInviteLink}
-          className="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
-          title="Copy invite link"
+          onClick={copyLink}
+          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+          title="Copy room link"
         >
-          {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
+          <Share2 className="w-4 h-4" />
+          Share
         </button>
+
+        <div className="w-px h-6 bg-gray-300 dark:bg-gray-600" />
 
         <button
           onClick={onExportPNG}
-          className="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
           title="Export as PNG"
         >
-          <Download className="w-5 h-5" />
+          <Download className="w-4 h-4" />
+          PNG
         </button>
 
         <button
           onClick={onExportSVG}
-          className="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
           title="Export as SVG"
         >
-          <Share2 className="w-5 h-5" />
+          <Download className="w-4 h-4" />
+          SVG
         </button>
+
+        <div className="w-px h-6 bg-gray-300 dark:bg-gray-600" />
 
         <button
           onClick={toggleTheme}
-          className="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
-          title="Toggle theme (disabled)"
+          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+          title="Toggle theme"
         >
+          <Moon className="w-4 h-4" />
           🌙
         </button>
       </div>
-    </div>
-  )
-}
+    )
+  }
+)
+
+Toolbar.displayName = 'Toolbar'
+
+export default Toolbar

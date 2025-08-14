@@ -35,7 +35,6 @@ const Whiteboard = forwardRef<WhiteboardRef, WhiteboardProps>(
     })
 
     const handleMount = (editor: any) => {
-      console.log('Whiteboard mounted with editor:', editor)
       editorRef.current = editor
       setIsReady(true)
     }
@@ -56,8 +55,6 @@ const Whiteboard = forwardRef<WhiteboardRef, WhiteboardProps>(
       exportPNG,
       exportSVG,
     }))
-
-    console.log('Whiteboard rendering, isReady:', isReady, 'roomId:', roomId, 'store status:', store.status)
 
     return (
       <div className="h-full w-full" style={{ position: 'relative' }}>
