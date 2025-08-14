@@ -23,7 +23,7 @@ const Whiteboard = forwardRef<WhiteboardRef, WhiteboardProps>(
     const [isReady, setIsReady] = useState(false)
     
     // Create synced store using tldraw's demo server
-    // TODO: Implement proper Cloudflare backend sync protocol
+    // TODO: Debug Cloudflare backend sync protocol
     const store = useSyncDemo({
       roomId: roomId,
       userInfo: {
